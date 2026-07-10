@@ -15,6 +15,7 @@
     error_generic: 'Something went wrong. Please try again.',
     retry: 'Retry',
     offline: 'No connection. Check your network and try again.',
+    session_reopen: 'Connection to Usion was interrupted — please close and reopen the app.',
 
     home_join_placeholder: 'Enter a code…',
     join: 'Join',
@@ -127,6 +128,7 @@
     error_generic: 'Алдаа гарлаа. Дахин оролдоно уу.',
     retry: 'Дахин оролдох',
     offline: 'Холболт алга. Сүлжээгээ шалгаад дахин оролдоно уу.',
+    session_reopen: 'Usion-той холболт тасарлаа — аппыг хааж дахин нээнэ үү.',
 
     home_join_placeholder: 'Код оруулах…',
     join: 'Нэгдэх',

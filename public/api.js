@@ -26,6 +26,13 @@
       const err = new Error((data && (data.error || data.detail)) || 'HTTP ' + res.status);
       err.code = (data && data.error) || 'HTTP_' + res.status;
       err.status = res.status;
+      // Embedded 401 = the host never delivered (or lost) our scoped token.
+      // Say so plainly instead of a generic failure; throttle to one notice.
+      if (res.status === 401 && QP.state.embedded && !QP._auth401Notified) {
+        QP._auth401Notified = true;
+        setTimeout(() => { QP._auth401Notified = false; }, 15000);
+        QP.toast(QP.t('session_reopen'));
+      }
       throw err;
     }
     return data;
