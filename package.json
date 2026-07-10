@@ -1,0 +1,17 @@
+{
+  "name": "usion-quiz-party",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Quiz Party — create quizzes and host them live, on Usion",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "PORT=3022 NODE_ENV=development node server/index.js",
+    "test": "node --test 'test/*.test.js'"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "nanoid": "^5.1.5"
+  }
+}
