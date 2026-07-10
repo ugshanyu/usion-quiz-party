@@ -98,10 +98,6 @@
     const publicBox = el('div', { class: 'list' });
 
     const screen = el('div', { class: 'screen' },
-      el('header', { class: 'topbar' },
-        QP.avatar(QP.state.user.name, QP.state.user.avatar),
-        el('h1', { class: 'topbar-title', text: t('app_name') }),
-        el('span', { class: 'icon-spacer' })),
       el('div', { class: 'content' },
         el('div', { class: 'join-row' }, codeInput,
           el('button', { class: 'btn btn-primary', text: t('join'), onClick: () => joinByCode(codeInput.value) })),
@@ -182,7 +178,7 @@
     }
 
     QP.show(el('div', { class: 'screen' },
-      QP.header({ onBack: () => QP.screens.home() }),
+      QP.backbar(() => QP.screens.home()),
       el('div', { class: 'content detail' },
         el('div', { class: 'detail-emoji', text: quiz.emoji || '🎯', 'aria-hidden': 'true' }),
         el('h2', { class: 'detail-title' }, quiz.title,
@@ -211,8 +207,9 @@
     QP._backHandler = () => QP.screens.detail(quiz);
     const box = el('div', { class: 'list' }, QP.spinner());
     QP.show(el('div', { class: 'screen' },
-      QP.header({ title: t('leaderboard_title'), onBack: QP._backHandler }),
+      QP.backbar(QP._backHandler),
       el('div', { class: 'content' },
+        el('h2', { class: 'screen-title center', text: t('leaderboard_title') }),
         el('p', { class: 'center', text: (quiz.emoji || '🎯') + ' ' + quiz.title }), box)));
     try {
       const { top, me } = await QP.api('/quizzes/' + quiz.id + '/leaderboard' + (quiz.code ? '?code=' + quiz.code : ''));

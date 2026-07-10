@@ -33,14 +33,27 @@
     window.scrollTo(0, 0);
   };
 
-  QP.header = function (opts) {
-    opts = opts || {};
-    return QP.el('header', { class: 'topbar' },
-      opts.onBack
-        ? QP.el('button', { class: 'icon-btn', 'aria-label': QP.t('cancel'), onClick: opts.onBack, text: '←' })
-        : QP.el('span', { class: 'icon-spacer' }),
-      QP.el('h1', { class: 'topbar-title', text: opts.title || QP.t('app_name') }),
-      opts.right || QP.el('span', { class: 'icon-spacer' }));
+  /**
+   * No in-app header: when embedded, the Usion host header's back button
+   * drives navigation (claimBackButton → QP._backHandler). Standalone/dev
+   * gets a minimal back row so the app stays navigable outside the host.
+   */
+  QP.backbar = function (onBack) {
+    if (!onBack || (QP.state && QP.state.embedded)) return QP.el('span', { class: 'backbar-none' });
+    return QP.el('div', { class: 'backbar' },
+      QP.el('button', { class: 'icon-btn', 'aria-label': QP.t('cancel'), onClick: onBack, text: '←' }));
+  };
+
+  /** Render a question's attached image or sound. */
+  QP.mediaEl = function (media, opts) {
+    if (!media || !media.url) return null;
+    if (media.type === 'image') {
+      return QP.el('img', { class: 'q-media-img', src: media.url, alt: '', loading: 'eager' });
+    }
+    return QP.el('audio', {
+      class: 'q-media-audio', src: media.url, controls: '', preload: 'auto',
+      autoplay: opts && opts.autoplay ? '' : null,
+    });
   };
 
   let toastTimer = null;

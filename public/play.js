@@ -3,11 +3,11 @@
   'use strict';
   const QP = window.QP;
   const el = QP.el; const t = QP.t;
-  const LETTERS = ['A', 'B', 'C', 'D'];
+  const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
   QP.screens.play = async function (quiz) {
     QP._backHandler = () => QP.screens.detail(quiz);
-    QP.show(el('div', { class: 'screen' }, QP.header({ onBack: QP._backHandler }), QP.spinner()));
+    QP.show(el('div', { class: 'screen' }, QP.backbar(QP._backHandler), QP.spinner()));
 
     let attempt;
     try {
@@ -44,6 +44,7 @@
           el('span', { class: 'score-pill', text: QP.fmtNumber(score) })),
         bar.el,
         el('div', { class: 'content play' },
+          QP.mediaEl(q.media, { autoplay: true }),
           el('h2', { class: 'question-text', text: q.text }),
           el('div', { class: 'answers' }, optionButtons))));
 
@@ -90,7 +91,7 @@
     function showFinal(final) {
       QP._backHandler = () => QP.screens.detail(quiz);
       QP.show(el('div', { class: 'screen' },
-        QP.header({ onBack: QP._backHandler }),
+        QP.backbar(QP._backHandler),
         el('div', { class: 'content center-col' },
           el('div', { class: 'detail-emoji', text: quiz.emoji || '🎯' }),
           el('p', { class: 'muted', text: t('play_final') }),

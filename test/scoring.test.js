@@ -28,3 +28,11 @@ test('garbage inputs degrade safely', () => {
   assert.equal(points(true, NaN, 20), 1000);
   assert.equal(points(true, 0, 0), 1000);
 });
+
+test('point multiplier scales the score (default 1)', () => {
+  assert.equal(points(true, 0, 20, 2), 2000);
+  assert.equal(points(true, 20000, 20, 3), 1500);
+  assert.equal(points(true, 0, 20, undefined), 1000);
+  assert.equal(points(false, 0, 20, 5), 0);
+  assert.equal(points(true, 0, 20, 99), 10000); // clamped to ×10
+});

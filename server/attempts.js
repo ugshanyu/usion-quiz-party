@@ -37,6 +37,7 @@ attemptsRouter.post('/quizzes/:id/attempts', rateLimit('attempt', 120, 60 * 60 *
 
   const questions = JSON.parse(quiz.questions).map((q) => ({
     text: q.text, options: q.options, time: q.time,
+    points: q.points || 1, media: q.media || null,
   }));
   res.status(201).json({ attemptId: id, quiz: { id: quiz.id, title: quiz.title, emoji: quiz.emoji }, questions });
 });
@@ -79,7 +80,7 @@ attemptsRouter.post('/attempts/:id/answers', (req, res) => {
   }
 
   const correct = choice !== null && choice === question.correct;
-  const gained = points(correct, Number(req.body.elapsedMs), question.time);
+  const gained = points(correct, Number(req.body.elapsedMs), question.time, question.points || 1);
 
   const score = transaction(() => {
     db.prepare(`

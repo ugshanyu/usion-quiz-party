@@ -7,11 +7,12 @@
   QP.live = { activeRoom: null };
 
   /** Keep identical to server/scoring.js `points`. */
-  QP.live.points = function (correct, elapsedMs, timeSec) {
+  QP.live.points = function (correct, elapsedMs, timeSec, multiplier) {
     if (!correct) return 0;
     const windowMs = Math.max(1, Number(timeSec) || 20) * 1000;
     const elapsed = Math.min(Math.max(Number(elapsedMs) || 0, 0), windowMs);
-    return Math.round(1000 - 500 * (elapsed / windowMs));
+    const mult = Math.max(1, Math.min(10, Number(multiplier) || 1));
+    return Math.round((1000 - 500 * (elapsed / windowMs)) * mult);
   };
 
   QP.live.rosterGrid = function (players) {

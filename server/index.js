@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { quizzesRouter } from './quizzes.js';
 import { attemptsRouter } from './attempts.js';
+import { mediaRouter, mediaDir } from './media.js';
 import { ApiError } from './validate.js';
 
 const app = express();
@@ -19,9 +20,13 @@ app.use((req, res, next) => {
 
 app.get('/health', (req, res) => res.json({ ok: true }));
 
+app.use('/api', mediaRouter);
 app.use('/api', quizzesRouter);
 app.use('/api', attemptsRouter);
 app.use('/api', (req, res) => res.status(404).json({ error: 'NOT_FOUND' }));
+
+// Uploaded question media — names are random ids, content never changes.
+app.use('/media', express.static(mediaDir, { maxAge: '365d', immutable: true }));
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 app.use(express.static(publicDir, { maxAge: process.env.NODE_ENV === 'production' ? '5m' : 0 }));

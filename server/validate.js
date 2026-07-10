@@ -15,11 +15,26 @@ export const LIMITS = {
   QUESTION_TEXT_MAX: 200,
   OPTION_MAX: 80,
   OPTIONS_MIN: 2,
-  OPTIONS_MAX: 4,
+  OPTIONS_MAX: 6,
   TIME_MIN: 5,
   TIME_MAX: 60,
+  POINTS_MIN: 1,
+  POINTS_MAX: 10,
   QUIZZES_PER_USER: 100,
 };
+
+// Only media uploaded through our own /api/media endpoint may be referenced.
+const MEDIA_URL_RE = /^\/media\/[a-z0-9]{8,32}\.(png|jpe?g|webp|gif|mp3|m4a|ogg|webm|wav)$/;
+
+function cleanMedia(m) {
+  if (m === null || m === undefined) return null;
+  if (typeof m !== 'object') throw new ApiError(400, 'INVALID_MEDIA');
+  const type = m.type === 'image' ? 'image' : (m.type === 'audio' ? 'audio' : null);
+  if (!type || typeof m.url !== 'string' || !MEDIA_URL_RE.test(m.url)) {
+    throw new ApiError(400, 'INVALID_MEDIA');
+  }
+  return { type, url: m.url };
+}
 
 function cleanText(value, max) {
   if (typeof value !== 'string') return '';
@@ -66,7 +81,14 @@ export function validateQuiz(body) {
     if (!Number.isInteger(time)) time = 20;
     time = Math.max(LIMITS.TIME_MIN, Math.min(LIMITS.TIME_MAX, time));
 
-    return { text, options, correct, time };
+    // Optional point multiplier (default 1): final score = speed points × points.
+    let points = Number(q.points);
+    if (!Number.isInteger(points)) points = 1;
+    points = Math.max(LIMITS.POINTS_MIN, Math.min(LIMITS.POINTS_MAX, points));
+
+    const media = cleanMedia(q.media);
+
+    return { text, options, correct, time, points, media };
   });
 
   return { title, description, emoji, visibility, questions };

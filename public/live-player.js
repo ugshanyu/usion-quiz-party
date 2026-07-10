@@ -5,14 +5,14 @@
   'use strict';
   const QP = window.QP;
   const el = QP.el; const t = QP.t;
-  const LETTERS = ['A', 'B', 'C', 'D'];
+  const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
   /** Joined a lobby by code; waiting for the host to start. */
   QP.screens.lobbyWait = function (code) {
     QP._backHandler = () => { try { Usion.lobby.leave(); } catch {} QP.screens.home(); };
     const membersBox = el('div', { class: 'list' });
     QP.show(el('div', { class: 'screen' },
-      QP.header({ onBack: QP._backHandler }),
+      QP.backbar(QP._backHandler),
       el('div', { class: 'content center-col' },
         el('h2', { text: t('live_youre_in') }),
         el('div', { class: 'code-display' }, el('span', { class: 'code-value', text: code })),
@@ -48,7 +48,7 @@
 
     const body = el('div', { class: 'content' }, QP.spinner());
     const overlay = el('div', { class: 'reconnect-overlay hidden', text: t('live_reconnecting') });
-    const root = el('div', { class: 'screen' }, QP.header({ onBack: leave }), body, overlay);
+    const root = el('div', { class: 'screen' }, QP.backbar(leave), body, overlay);
     root._cleanup = () => { subs.clear(); if (bar) bar.stop(); };
     QP._backHandler = leave;
     QP.show(root);
@@ -135,6 +135,7 @@
       body.replaceChildren(
         el('p', { class: 'muted center', text: t('question_of', { i: q.i + 1, n: q.n }) }),
         bar ? bar.el : el('div'),
+        QP.mediaEl(q.media, { autoplay: true }),
         el('h2', { class: 'question-text', text: q.text }),
         el('div', { class: 'answers' }, buttons),
         el('p', { class: 'muted center', id: 'ack-chip', text: '' }));

@@ -120,3 +120,13 @@
 
 /* Standalone landing */
 .standalone .brand-emoji { font-size: 64px; }
+
+/* Builder v2 */
+.screen-title { font-size: 20px; font-weight: 700; }
+.backbar { padding: 8px 4px 0; }
+.backbar-none { display: none; }
+.opt-remove { min-width: 40px; min-height: 40px; color: var(--muted); font-size: 15px; }
+.media-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.media-thumb { max-height: 84px; max-width: 140px; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; }
+.q-media-img { max-width: 100%; max-height: 220px; border-radius: var(--radius); align-self: center; object-fit: contain; }
+.q-media-audio { width: 100%; max-width: 360px; align-self: center; }

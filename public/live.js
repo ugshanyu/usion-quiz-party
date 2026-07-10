@@ -11,8 +11,9 @@
     QP._backHandler = () => QP.screens.home();
     const box = el('div', { class: 'list' }, QP.spinner());
     QP.show(el('div', { class: 'screen' },
-      QP.header({ title: t('host_pick_quiz'), onBack: QP._backHandler }),
-      el('div', { class: 'content' }, box)));
+      QP.backbar(QP._backHandler),
+      el('div', { class: 'content' },
+        el('h2', { class: 'screen-title center', text: t('host_pick_quiz') }), box)));
     Promise.all([QP.api('/quizzes/mine'), QP.api('/quizzes/public')])
       .then(([mine, pub]) => {
         const seen = new Set();
@@ -37,7 +38,7 @@
     let current = null;          // {i, sentAt, answers: Map, closed, timer}
     const body = el('div', { class: 'content' }, QP.spinner());
     const root = el('div', { class: 'screen' },
-      QP.header({ onBack: leave }), body);
+      QP.backbar(leave), body);
     root._cleanup = () => { subs.clear(); if (current) clearTimeout(current.timer); };
     QP._backHandler = leave;
     QP.show(root);
@@ -183,7 +184,7 @@
       const q = quiz.questions[i];
       current = { i, sentAt: Date.now(), answers: new Map(), closed: false, timer: null };
       phase = 'question';
-      Usion.game.action('q', { i, text: q.text, options: q.options, t: q.time, n: quiz.questions.length });
+      Usion.game.action('q', { i, text: q.text, options: q.options, t: q.time, n: quiz.questions.length, media: q.media || null, pts: q.points || 1 });
       current.timer = setTimeout(closeQuestion, q.time * 1000 + 800);
       renderQuestion(q);
     }
@@ -199,6 +200,7 @@
       body.replaceChildren(
         el('p', { class: 'muted center', text: t('question_of', { i: current.i + 1, n: quiz.questions.length }) }),
         bar.el,
+        QP.mediaEl(q.media, { autoplay: true }),
         el('h2', { class: 'question-text', text: q.text }),
         el('div', { class: 'stack-sm' }, q.options.map((opt, oi) => el('div', { class: 'host-opt', text: opt }))),
         answerCountEl,
@@ -218,7 +220,7 @@
         const a = current.answers.get(pid);
         if (a && Number.isInteger(a.c) && a.c >= 0 && a.c < q.options.length) counts[a.c] += 1;
         const correct = !!a && a.c === q.correct;
-        const gained = QP.live.points(correct, a ? a.elapsed : 0, q.time);
+        const gained = QP.live.points(correct, a ? a.elapsed : 0, q.time, q.points || 1);
         totals.set(pid, (totals.get(pid) || 0) + gained);
         info.gained = gained;
       });

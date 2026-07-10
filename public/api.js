@@ -39,6 +39,26 @@
     return request('', '/api' + path, opts, token);
   };
 
+  /** Upload question media (image/sound) as a raw body. Resolves {url, type}. */
+  QP.upload = async function (file) {
+    const token = (window.Usion && Usion.config && Usion.config.authToken) || QP.state.authToken;
+    let res;
+    try {
+      res = await fetch('/api/media', {
+        method: 'POST',
+        headers: { 'Content-Type': file.type || 'application/octet-stream', Authorization: 'Bearer ' + token },
+        body: file,
+      });
+    } catch { const e = new Error('offline'); e.code = 'OFFLINE'; throw e; }
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      const e = new Error((data && data.error) || 'HTTP ' + res.status);
+      e.code = (data && data.error) || 'HTTP_' + res.status;
+      throw e;
+    }
+    return data;
+  };
+
   /** The Usion platform REST API (room create/join for live mode). */
   QP.platformApi = function (path, opts) {
     const base = (QP.state.config && QP.state.config.apiUrl || '').replace(/\/$/, '');
