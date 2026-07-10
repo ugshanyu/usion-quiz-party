@@ -31,9 +31,12 @@
     return data;
   }
 
-  /** Our own backend. */
+  /** Our own backend. Reads the token live — the host re-mints the scoped
+   *  iframe token and re-INITs before expiry, and the SDK merges it into
+   *  Usion.config; a boot-time copy would go stale after an hour. */
   QP.api = function (path, opts) {
-    return request('', '/api' + path, opts, QP.state.authToken);
+    const token = (window.Usion && Usion.config && Usion.config.authToken) || QP.state.authToken;
+    return request('', '/api' + path, opts, token);
   };
 
   /** The Usion platform REST API (room create/join for live mode). */

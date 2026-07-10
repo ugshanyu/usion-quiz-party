@@ -1,10 +1,13 @@
 /**
- * Authentication: the client forwards the Usion platform JWT it received in
- * the SDK init config. We never decode it ourselves — we introspect it against
- * the platform (`GET /auth/me`) and cache the result. The platform base URL is
- * pinned server-side (never taken from the client).
+ * Authentication: embedded mini-apps receive a SCOPED iframe token
+ * (purpose="iframe", bound to this service) in the SDK init config — never
+ * the user's full JWT. The client forwards it; we verify it against the
+ * platform's purpose-built endpoint `POST /iframe/verify-token` (scoped to
+ * OUR service id) and cache the result. The platform base URL and service id
+ * are pinned server-side (never taken from the client).
  */
 const USION_API_URL = (process.env.USION_API_URL || 'https://mobile.mongolai.mn').replace(/\/$/, '');
+const USION_SERVICE_ID = process.env.USION_SERVICE_ID || 'quiz-party';
 
 const OK_TTL_MS = 10 * 60 * 1000;
 const BAD_TTL_MS = 60 * 1000;
@@ -35,20 +38,22 @@ export async function requireAuth(req, res, next) {
   }
 
   try {
-    const r = await fetch(USION_API_URL + '/auth/me', {
-      headers: { Authorization: 'Bearer ' + token },
+    const r = await fetch(USION_API_URL + '/iframe/verify-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, expected_service_id: USION_SERVICE_ID }),
       signal: AbortSignal.timeout(6000),
     });
-    if (r.status === 401 || r.status === 403) {
+    if (r.status === 401 || r.status === 403 || r.status === 422) {
       remember(token, null, BAD_TTL_MS);
       return res.status(401).json({ error: 'UNAUTHENTICATED' });
     }
     if (!r.ok) return res.status(502).json({ error: 'AUTH_UPSTREAM' });
     const u = await r.json();
-    if (!u || !u.id) return res.status(502).json({ error: 'AUTH_UPSTREAM' });
+    if (!u || !u.user_id) return res.status(502).json({ error: 'AUTH_UPSTREAM' });
     const user = {
-      id: String(u.id),
-      name: String(u.display_name || u.name || 'Player').slice(0, 80),
+      id: String(u.user_id),
+      name: String(u.name || 'Player').slice(0, 80),
       avatar: typeof u.avatar === 'string' ? u.avatar.slice(0, 512) : null,
     };
     remember(token, user, OK_TTL_MS);
