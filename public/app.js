@@ -36,6 +36,16 @@
       QP.setLanguage((config.language || 'en').slice(0, 2));
       applyTheme(config.theme);
       wirePlatform();
+      if (!config.authToken) {
+        // The host's first INIT races its token mint — hold on a spinner
+        // until the token lands (re-INIT) instead of firing 401s at boot.
+        QP.show(QP.el('div', { class: 'screen' }, QP.spinner()));
+        QP.waitForToken(null, 6000).then((tok) => {
+          if (tok) QP.state.authToken = tok;
+          route(config);
+        });
+        return;
+      }
       route(config);
     });
   }

@@ -3,6 +3,19 @@
   'use strict';
   const QP = window.QP;
 
+  /** Wait up to timeoutMs for the host to deliver a (new) scoped token via
+   *  (re-)INIT. The host sends its first INIT before the token mint finishes,
+   *  so the first seconds of an embedded session are legitimately tokenless. */
+  QP.waitForToken = async function (previous, timeoutMs) {
+    const deadline = Date.now() + (timeoutMs || 4000);
+    for (;;) {
+      const current = (window.Usion && Usion.config && Usion.config.authToken) || QP.state.authToken || null;
+      if (current && current !== previous) return current;
+      if (Date.now() > deadline) return null;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  };
+
   async function request(base, path, opts, token) {
     opts = opts || {};
     let res;
@@ -26,13 +39,6 @@
       const err = new Error((data && (data.error || data.detail)) || 'HTTP ' + res.status);
       err.code = (data && data.error) || 'HTTP_' + res.status;
       err.status = res.status;
-      // Embedded 401 = the host never delivered (or lost) our scoped token.
-      // Say so plainly instead of a generic failure; throttle to one notice.
-      if (res.status === 401 && QP.state.embedded && !QP._auth401Notified) {
-        QP._auth401Notified = true;
-        setTimeout(() => { QP._auth401Notified = false; }, 15000);
-        QP.toast(QP.t('session_reopen'));
-      }
       throw err;
     }
     return data;
@@ -40,10 +46,26 @@
 
   /** Our own backend. Reads the token live — the host re-mints the scoped
    *  iframe token and re-INITs before expiry, and the SDK merges it into
-   *  Usion.config; a boot-time copy would go stale after an hour. */
-  QP.api = function (path, opts) {
+   *  Usion.config. On an embedded 401, the token was missing or stale (the
+   *  host's FIRST INIT races its token mint) — wait briefly for a fresh one
+   *  and retry once before surfacing the "reopen" notice. */
+  QP.api = async function (path, opts) {
     const token = (window.Usion && Usion.config && Usion.config.authToken) || QP.state.authToken;
-    return request('', '/api' + path, opts, token);
+    try {
+      return await request('', '/api' + path, opts, token);
+    } catch (err) {
+      if (err.status !== 401 || !QP.state.embedded) throw err;
+      const fresh = await QP.waitForToken(token, 5000);
+      if (fresh) {
+        try { return await request('', '/api' + path, opts, fresh); } catch (err2) { err = err2; }
+      }
+      if (err.status === 401 && !QP._auth401Notified) {
+        QP._auth401Notified = true;
+        setTimeout(() => { QP._auth401Notified = false; }, 15000);
+        QP.toast(QP.t('session_reopen'));
+      }
+      throw err;
+    }
   };
 
   /** Upload question media (image/sound) as a raw body. Resolves {url, type}. */
