@@ -70,11 +70,12 @@
           else b.classList.add('dim');
         });
         const verdict = choice === null ? t('play_timeout') : (result.correct ? t('play_correct') : t('play_wrong'));
-        const banner = el('div', { class: 'verdict ' + (result.correct ? 'good' : 'bad'), role: 'status' },
+        // Floating overlay — must NOT shift the question/image/options.
+        const banner = el('div', { class: 'verdict verdict-float ' + (result.correct ? 'good' : 'bad'), role: 'status' },
           el('span', { text: verdict }),
           result.correct ? el('span', { class: 'points-gain', text: t('plus_points', { n: result.points }) }) : null);
-        document.querySelector('.play').prepend(banner);
-        setTimeout(next, 1700);
+        document.body.appendChild(banner);
+        setTimeout(() => { banner.remove(); next(); }, 1700);
       }
     }
 
