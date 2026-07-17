@@ -39,7 +39,7 @@ export const mediaRouter = Router();
 mediaRouter.post(
   '/media',
   requireAuth,
-  rateLimit('media-upload', 30, 60 * 60 * 1000),
+  rateLimit('media-upload', 120, 60 * 60 * 1000),
   express.raw({ type: ['image/*', 'audio/*'], limit: AUDIO_MAX }),
   (req, res) => {
     const mime = (req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
