@@ -78,7 +78,7 @@ export function validateQuiz(body) {
     }
 
     let time = Number(q.time);
-    if (!Number.isInteger(time)) time = 20;
+    if (!Number.isInteger(time)) time = 10;
     time = Math.max(LIMITS.TIME_MIN, Math.min(LIMITS.TIME_MAX, time));
 
     // Optional point multiplier (default 1): final score = speed points × points.

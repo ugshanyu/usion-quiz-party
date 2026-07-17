@@ -10,7 +10,7 @@
   const MAX_OPTIONS = 6;
 
   function blankQuestion() {
-    return { text: '', options: ['', ''], correct: -1, time: 20, points: 1, media: null };
+    return { text: '', options: ['', ''], correct: -1, time: 10, points: 1, media: null };
   }
 
   QP.screens.create = function (existing) {
