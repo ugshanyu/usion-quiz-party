@@ -31,6 +31,13 @@
     root.replaceChildren(node);
     root.scrollTop = 0;
     window.scrollTo(0, 0);
+    // The host back-button claim is ONE-SHOT (host and SDK both reset after a
+    // single press) — re-claim on every screen that has a back handler, and
+    // release on root screens so the host button becomes a plain close again.
+    if (QP.state && QP.state.embedded && window.Usion) {
+      if (QP._backHandler && QP._invokeBack) Usion.claimBackButton(QP._invokeBack);
+      else if (Usion.releaseBackButton) Usion.releaseBackButton();
+    }
   };
 
   /**

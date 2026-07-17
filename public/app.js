@@ -61,10 +61,15 @@
       if (QP.live && QP.live.activeRoom === d.roomId) return;
       QP.screens.hostPick(d.roomId);
     });
-    Usion.claimBackButton(() => {
-      if (QP._backHandler) QP._backHandler();
-      else Usion.exit();
-    });
+    // Claims are managed per-screen in QP.show (the claim is one-shot on the
+    // host, so it must be renewed after every press / screen change).
+    QP._invokeBack = () => {
+      const handler = QP._backHandler;
+      if (handler) handler();
+      // Handlers navigate, and the new screen's QP.show re-claims. If a
+      // handler ever doesn't navigate, renew the claim explicitly.
+      if (QP._backHandler && window.Usion) Usion.claimBackButton(QP._invokeBack);
+    };
   }
 
   function route(config) {
